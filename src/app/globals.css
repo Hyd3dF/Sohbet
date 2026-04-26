@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply h-full;
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-bg text-text antialiased font-sans;
+    font-feature-settings: "cv11", "ss01", "ss03", "tnum";
+    background-image:
+      radial-gradient(900px 500px at 85% -10%, rgba(124, 92, 255, 0.10), transparent 60%),
+      radial-gradient(700px 420px at -10% 110%, rgba(124, 92, 255, 0.07), transparent 60%);
+    background-attachment: fixed;
+  }
+  ::selection {
+    @apply bg-accent/35 text-white;
+  }
+  :focus-visible {
+    @apply outline-none;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #232838;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2f3648;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-bg-card/75 backdrop-blur-xl border border-border/80 rounded-2xl shadow-soft;
+  }
+  .glass-flat {
+    @apply bg-bg-card border border-border rounded-2xl;
+  }
+
+  .input-base {
+    @apply w-full bg-bg-soft border border-border rounded-xl px-4 py-2.5 text-[15px] text-text
+           placeholder:text-text-dim transition
+           hover:border-border-strong
+           focus:outline-none focus:border-accent/60 focus:shadow-ring-focus;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
+           font-medium text-sm tracking-tight transition
+           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed
+           focus:outline-none focus-visible:shadow-ring-focus;
+  }
+  .btn-primary {
+    @apply btn text-white shadow-glow-soft hover:shadow-glow
+           bg-gradient-to-b from-accent-glow to-accent
+           hover:from-accent hover:to-accent-hover;
+  }
+  .btn-ghost {
+    @apply btn bg-bg-soft hover:bg-bg-hover text-text
+           border border-border hover:border-border-strong;
+  }
+  .btn-danger {
+    @apply btn bg-danger-soft hover:bg-danger/25 text-danger border border-danger/30;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-2xs font-medium
+           bg-bg-soft border border-border text-text-muted;
+  }
+  .chip-accent {
+    @apply chip bg-accent-soft border-accent/30 text-accent-glow;
+  }
+  .chip-success {
+    @apply chip bg-success-soft border-success/30 text-success;
+  }
+
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-lg
+           text-text-muted hover:text-text hover:bg-bg-soft transition
+           focus:outline-none focus-visible:shadow-ring-focus;
+  }
+
+  .divider {
+    @apply h-px bg-border-soft;
+  }
+}
