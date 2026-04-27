@@ -37,10 +37,16 @@ export function TopBar({ profile }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Oda detay sayfasında mıyız? (/rooms/xyz — ama /rooms değil)
+  const isInsideRoom = pathname.startsWith("/rooms/");
+
   // Bottom nav sadece ana sayfalarda görünsün
   const showBottomNav =
     pathname === "/feed" ||
     pathname === "/rooms";
+
+  // Oda içindeyken TopBar'ı tamamen gizle
+  if (isInsideRoom) return null;
 
   async function logout() {
     const supabase = createClient();
