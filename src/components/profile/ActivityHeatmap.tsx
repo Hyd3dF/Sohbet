@@ -6,13 +6,6 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   userId: string;
-  /** Banner modunda — sadece grid, arka planda yarı saydam */
-  bannerMode?: boolean;
-}
-
-interface DayActivity {
-  date: string;
-  count: number;
 }
 
 const WEEKS = 26;
@@ -25,68 +18,72 @@ function getIntensity(count: number): 0 | 1 | 2 | 3 | 4 {
   return 4;
 }
 
-// Banner modunda beyaz/mor tonları, normal modda accent tonları
-const bannerIntensityClass: Record<number, string> = {
-  0: "bg-white/5",
-  1: "bg-white/15",
-  2: "bg-white/30",
-  3: "bg-white/50",
-  4: "bg-white/75",
-};
-
-const normalIntensityClass: Record<number, string> = {
+const intensityClass: Record<number, string> = {
   0: "bg-bg-inset border border-border/40",
-  1: "bg-accent/20 border border-accent/20",
-  2: "bg-accent/40 border border-accent/30",
-  3: "bg-accent/65 border border-accent/50",
-  4: "bg-accent border border-accent-glow/50 shadow-glow-soft",
+  1: "bg-accent/25 border border-accent/30",
+  2: "bg-accent/50 border border-accent/40",
+  3: "bg-accent/75 border border-accent-glow/50",
+  4: "bg-accent-glow border border-accent-glow shadow-glow-soft",
 };
 
 const MONTH_LABELS = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
 const DAY_LABELS = ["Pzt","","Çar","","Cum","","Paz"];
 
-export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
+export function ActivityHeatmap({ userId }: Props) {
   const [data, setData] = useState<Map<string, number>>(new Map());
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, streak: 0, thisWeek: 0 });
-  const [tooltip, setTooltip] = useState<{ date: string; count: number } | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     const supabase = createClient();
+
     async function load() {
-      const since = new Date();
-      since.setDate(since.getDate() - WEEKS * 7);
-      const { data: rows } = await supabase
-        .from("user_activity")
-        .select("date, action_count")
-        .eq("user_id", userId)
-        .gte("date", since.toISOString().split("T")[0])
-        .order("date", { ascending: true });
+      try {
+        const since = new Date();
+        since.setDate(since.getDate() - WEEKS * 7);
+        const { data: rows, error } = await supabase
+          .from("user_activity")
+          .select("date, action_count")
+          .eq("user_id", userId)
+          .gte("date", since.toISOString().split("T")[0])
+          .order("date", { ascending: true });
 
-      const map = new Map<string, number>();
-      let total = 0;
-      rows?.forEach((r) => { map.set(r.date, r.action_count); total += r.action_count; });
-      setData(map);
+        if (cancelled) return;
+        if (error) {
+          // Tablo yok ya da hata — sessizce boş göster
+          setLoading(false);
+          return;
+        }
 
-      let streak = 0;
-      const today = new Date();
-      for (let i = 0; i < 365; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const key = d.toISOString().split("T")[0];
-        if ((map.get(key) ?? 0) > 0) streak++;
-        else if (i > 0) break;
+        const map = new Map<string, number>();
+        let total = 0;
+        rows?.forEach((r) => { map.set(r.date, r.action_count); total += r.action_count; });
+        setData(map);
+
+        let streak = 0;
+        const today = new Date();
+        for (let i = 0; i < 365; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const key = d.toISOString().split("T")[0];
+          if ((map.get(key) ?? 0) > 0) streak++;
+          else if (i > 0) break;
+        }
+        let thisWeek = 0;
+        for (let i = 0; i < 7; i++) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          thisWeek += map.get(d.toISOString().split("T")[0]) ?? 0;
+        }
+        setStats({ total, streak, thisWeek });
+        setLoading(false);
+      } catch {
+        if (!cancelled) setLoading(false);
       }
-      let thisWeek = 0;
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        thisWeek += map.get(d.toISOString().split("T")[0]) ?? 0;
-      }
-      setStats({ total, streak, thisWeek });
-      setLoading(false);
     }
     load();
+    return () => { cancelled = true; };
   }, [userId]);
 
   const today = new Date();
@@ -95,9 +92,9 @@ export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
   const gridStart = new Date(today);
   gridStart.setDate(gridStart.getDate() - dayOfWeek - (WEEKS - 1) * 7);
 
-  const weeks: DayActivity[][] = [];
+  const weeks: { date: string; count: number }[][] = [];
   for (let w = 0; w < WEEKS; w++) {
-    const week: DayActivity[] = [];
+    const week: { date: string; count: number }[] = [];
     for (let d = 0; d < 7; d++) {
       const date = new Date(gridStart);
       date.setDate(gridStart.getDate() + w * 7 + d);
@@ -115,41 +112,13 @@ export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
     }
   });
 
-  const intensityClass = bannerMode ? bannerIntensityClass : normalIntensityClass;
-
-  // Banner modu — sadece grid, arka planda
-  if (bannerMode) {
-    if (loading) return null;
-    return (
-      <div className="flex gap-[3px] w-full">
-        {weeks.map((week, wi) => (
-          <div key={wi} className="flex flex-col gap-[3px] flex-1">
-            {week.map((day) => {
-              const intensity = getIntensity(day.count);
-              const isFuture = day.date > todayStr;
-              return (
-                <div
-                  key={day.date}
-                  className={cn(
-                    "rounded-[2px] w-full transition-opacity",
-                    isFuture ? "opacity-0" : intensityClass[intensity],
-                  )}
-                  style={{ aspectRatio: "1" }}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  // Normal mod — istatistikler + grid
   if (loading) {
     return (
-      <div className="space-y-2">
-        <div className="skeleton h-4 w-32 rounded" />
-        <div className="skeleton h-24 w-full rounded-2xl" />
+      <div className="space-y-3">
+        <div className="grid grid-cols-3 gap-3">
+          {[0,1,2].map((i) => <div key={i} className="skeleton h-16 rounded-2xl" />)}
+        </div>
+        <div className="skeleton h-32 rounded-2xl" />
       </div>
     );
   }
@@ -159,38 +128,41 @@ export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Toplam", value: stats.total },
-          { label: "Seri", value: `${stats.streak}g` },
-          { label: "Bu hafta", value: stats.thisWeek },
+          { label: "Toplam", value: stats.total, icon: "💜" },
+          { label: "Seri", value: `${stats.streak} gün`, icon: "🔥" },
+          { label: "Bu hafta", value: stats.thisWeek, icon: "✨" },
         ].map((s) => (
           <div key={s.label} className="glass p-3 text-center space-y-0.5">
             <div className="text-lg font-bold text-text tabular-nums">{s.value}</div>
-            <div className="text-[10px] text-text-dim font-medium">{s.label}</div>
+            <div className="text-[10px] text-text-dim font-medium uppercase tracking-wide">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Grid */}
       <div className="glass p-4 overflow-x-auto">
-        <div className="flex gap-1">
-          <div className="flex flex-col gap-[3px] mr-1 mt-5">
+        <div className="flex gap-1 min-w-fit">
+          {/* Gün etiketleri */}
+          <div className="flex flex-col gap-[3px] mr-1.5 mt-5 shrink-0">
             {DAY_LABELS.map((label, i) => (
-              <div key={i} className="h-[10px] text-[8px] text-text-faint leading-none flex items-center">
+              <div key={i} className="h-[11px] text-[9px] text-text-faint leading-none flex items-center font-medium">
                 {label}
               </div>
             ))}
           </div>
-          <div className="flex-1">
-            <div className="flex mb-1" style={{ gap: "3px" }}>
+          <div className="flex-1 min-w-0">
+            {/* Ay etiketleri */}
+            <div className="flex mb-1.5" style={{ gap: "3px" }}>
               {weeks.map((_, i) => {
                 const marker = monthMarkers.find((m) => m.weekIdx === i);
                 return (
-                  <div key={i} className="flex-1 text-[8px] text-text-faint leading-none min-w-[10px]">
+                  <div key={i} className="text-[9px] text-text-faint leading-none font-medium" style={{ width: 11 }}>
                     {marker?.label ?? ""}
                   </div>
                 );
               })}
             </div>
+            {/* Cells */}
             <div className="flex" style={{ gap: "3px" }}>
               {weeks.map((week, wi) => (
                 <div key={wi} className="flex flex-col" style={{ gap: "3px" }}>
@@ -201,12 +173,10 @@ export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
                       <div
                         key={day.date}
                         className={cn(
-                          "rounded-[3px] cursor-default transition-transform hover:scale-125",
+                          "rounded-[3px] cursor-default transition-transform hover:scale-150 hover:z-10",
                           isFuture ? "opacity-0 pointer-events-none" : intensityClass[intensity],
                         )}
-                        style={{ width: 10, height: 10 }}
-                        onMouseEnter={() => setTooltip({ date: day.date, count: day.count })}
-                        onMouseLeave={() => setTooltip(null)}
+                        style={{ width: 11, height: 11 }}
                         title={`${day.date}: ${day.count} aktivite`}
                       />
                     );
@@ -216,20 +186,14 @@ export function ActivityHeatmap({ userId, bannerMode = false }: Props) {
             </div>
           </div>
         </div>
-        {tooltip && (
-          <div className="mt-3 text-xs text-text-muted text-center animate-fade-in">
-            <span className="font-semibold text-text">{tooltip.count}</span> aktivite ·{" "}
-            {new Date(tooltip.date + "T00:00:00").toLocaleDateString("tr-TR", {
-              day: "numeric", month: "long", year: "numeric",
-            })}
-          </div>
-        )}
-        <div className="flex items-center justify-end gap-1.5 mt-3">
-          <span className="text-[9px] text-text-faint">Az</span>
+
+        {/* Legend */}
+        <div className="flex items-center justify-end gap-1.5 mt-4 pt-3 border-t border-border-soft">
+          <span className="text-[10px] text-text-dim font-medium">Az</span>
           {[0,1,2,3,4].map((i) => (
-            <div key={i} className={cn("rounded-[3px]", intensityClass[i])} style={{ width: 10, height: 10 }} />
+            <div key={i} className={cn("rounded-[3px]", intensityClass[i])} style={{ width: 11, height: 11 }} />
           ))}
-          <span className="text-[9px] text-text-faint">Çok</span>
+          <span className="text-[10px] text-text-dim font-medium">Çok</span>
         </div>
       </div>
     </div>

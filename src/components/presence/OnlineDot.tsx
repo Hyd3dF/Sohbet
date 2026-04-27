@@ -1,12 +1,7 @@
 "use client";
 
-/**
- * OnlineDot — kullanıcının online/offline durumunu gösteren nokta.
- * userId prop'u varsa Supabase'den durumu çeker, yoksa statik gösterir.
- */
-
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { presenceStore } from "@/lib/presence-store";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -16,51 +11,15 @@ interface Props {
 }
 
 export function OnlineDot({ userId, size = "md", className }: Props) {
-  const [isOnline, setIsOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => presenceStore.isOnline(userId));
 
   useEffect(() => {
-    const supabase = createClient();
-    let cancelled = false;
-
-    // İlk yükleme
-    supabase
-      .from("user_presence")
-      .select("is_online, last_seen_at")
-      .eq("user_id", userId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled || !data) return;
-        // 2 dakika içinde heartbeat geldiyse online say
-        const lastSeen = new Date(data.last_seen_at).getTime();
-        const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
-        setIsOnline(data.is_online && lastSeen > twoMinutesAgo);
-      });
-
-    // Realtime güncelleme
-    const channel = supabase
-      .channel(`presence:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "user_presence",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          if (cancelled) return;
-          const row = payload.new as { is_online: boolean; last_seen_at: string };
-          const lastSeen = new Date(row.last_seen_at).getTime();
-          const twoMinutesAgo = Date.now() - 2 * 60 * 1000;
-          setIsOnline(row.is_online && lastSeen > twoMinutesAgo);
-        },
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
+    presenceStore.fetchUser(userId);
+    setIsOnline(presenceStore.isOnline(userId));
+    const unsub = presenceStore.subscribe((id, online) => {
+      if (id === userId) setIsOnline(online);
+    });
+    return unsub;
   }, [userId]);
 
   const sizeClasses = {

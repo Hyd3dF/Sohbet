@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
+import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
 import { OnlineDot } from "@/components/presence/OnlineDot";
 import type { Profile } from "@/lib/types/db";
 
@@ -59,6 +60,14 @@ export function ReadOnlyProfile({ profile }: { profile: Profile }) {
           </svg>
           <span>{memberSince}&apos;dan beri üye</span>
         </div>
+
+        {/* Aktivite */}
+        <section>
+          <h2 className="text-xs font-semibold text-text-muted mb-3 tracking-widest uppercase">
+            Aktivite
+          </h2>
+          <ActivityHeatmap userId={profile.id} />
+        </section>
       </div>
     </main>
   );

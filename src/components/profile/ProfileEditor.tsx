@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
+import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
 import { cn, randomFileName } from "@/lib/utils";
 import type { Profile } from "@/lib/types/db";
 
@@ -212,6 +213,14 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
               <span aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             </button>
           </div>
+        </section>
+
+        {/* Aktivite */}
+        <section>
+          <h2 className="text-xs font-semibold text-text-muted mb-3 tracking-widest uppercase">
+            Aktivitem
+          </h2>
+          <ActivityHeatmap userId={profile.id} />
         </section>
       </div>
     </main>
