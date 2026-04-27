@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
-import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
 import { OnlineDot } from "@/components/presence/OnlineDot";
 import type { Profile } from "@/lib/types/db";
 
@@ -15,17 +14,12 @@ export function ReadOnlyProfile({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner — heatmap arka planda */}
+      {/* Banner */}
       <div className="relative h-44 sm:h-56 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
         <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
         <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
-        {/* Heatmap arka planda */}
-        <div className="absolute inset-0 p-3 opacity-40">
-          <ActivityHeatmap userId={profile.id} bannerMode />
-        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
-        {/* Back button */}
         <Link
           href="/feed"
           className="absolute top-4 left-4 icon-btn bg-bg/40 backdrop-blur border border-white/10"
@@ -38,35 +32,26 @@ export function ReadOnlyProfile({ profile }: { profile: Profile }) {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
-        {/* Avatar row */}
         <div className="flex items-end justify-between -mt-14 mb-5">
           <div className="relative">
-            <Avatar
-              url={profile.avatar_url}
-              name={name}
-              size={96}
-              className="ring-4 ring-bg shadow-lift"
-            />
+            <Avatar url={profile.avatar_url} name={name} size={96} className="ring-4 ring-bg shadow-lift" />
             <span className="absolute bottom-1 right-1">
               <OnlineDot userId={profile.id} size="lg" className="ring-2 ring-bg" />
             </span>
           </div>
         </div>
 
-        {/* Name */}
         <div className="space-y-0.5 mb-4">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{name}</h1>
           <div className="text-sm text-text-dim">@{profile.username}</div>
         </div>
 
-        {/* Bio */}
         {profile.bio && (
           <p className="text-[15px] text-text-muted leading-relaxed whitespace-pre-wrap break-words mb-5">
             {profile.bio}
           </p>
         )}
 
-        {/* Member since */}
         <div className="inline-flex items-center gap-1.5 text-xs text-text-dim mb-8">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
             <rect x="3" y="4" width="18" height="18" rx="2" />
@@ -74,14 +59,6 @@ export function ReadOnlyProfile({ profile }: { profile: Profile }) {
           </svg>
           <span>{memberSince}&apos;dan beri üye</span>
         </div>
-
-        {/* Activity Heatmap */}
-        <section>
-          <h2 className="text-xs font-semibold text-text-muted mb-3 tracking-wide uppercase">
-            Aktivite
-          </h2>
-          <ActivityHeatmap userId={profile.id} />
-        </section>
       </div>
     </main>
   );

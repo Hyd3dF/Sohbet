@@ -4,7 +4,6 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
-import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
 import { cn, randomFileName } from "@/lib/utils";
 import type { Profile } from "@/lib/types/db";
 
@@ -86,20 +85,11 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner — heatmap arka planda */}
+      {/* Banner */}
       <div className="relative h-44 sm:h-56 overflow-hidden">
-        {/* Gradient zemin */}
         <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
-        {/* Glow efektleri */}
         <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
         <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
-        {/* Heatmap arka planda — sağ alt köşeye yaslanmış */}
-        <div className="absolute inset-0 flex items-end justify-end p-3 opacity-40">
-          <div className="w-full h-full">
-            <ActivityHeatmap userId={profile.id} bannerMode />
-          </div>
-        </div>
-        {/* Üstten karartma — avatar ve içerik için */}
         <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
       </div>
 
@@ -222,14 +212,6 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
               <span aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             </button>
           </div>
-        </section>
-
-        {/* Aktivite Heatmap */}
-        <section>
-          <h2 className="text-xs font-semibold text-text-muted mb-3 tracking-wide uppercase">
-            Aktivitem
-          </h2>
-          <ActivityHeatmap userId={profile.id} />
         </section>
       </div>
     </main>
