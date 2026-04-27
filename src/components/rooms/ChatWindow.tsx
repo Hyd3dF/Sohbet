@@ -9,6 +9,7 @@ import { MessageBubble } from "@/components/rooms/MessageBubble";
 import { MessageComposer } from "@/components/rooms/MessageComposer";
 import { MemberList } from "@/components/rooms/MemberList";
 import { RoomSettings } from "@/components/rooms/RoomSettings";
+import { VoiceCall } from "@/components/voice/VoiceCall";
 import { initialsOf } from "@/lib/utils";
 import type { Message, Profile, Room, RoomRole } from "@/lib/types/db";
 
@@ -29,6 +30,7 @@ export function ChatWindow({ room, me, initialRole }: Props) {
   const [myRole, setMyRole] = useState<RoomRole | null>(initialRole);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   // Viewport tespiti — MemberList'i aynı anda iki yerde mount etmemek için
   // (desktop sidebar + mobile portal). Çift mount aynı Supabase kanal adına
@@ -174,6 +176,18 @@ export function ChatWindow({ room, me, initialRole }: Props) {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            {/* Ses araması */}
+            <button
+              onClick={() => setVoiceOpen(true)}
+              className="icon-btn"
+              aria-label="Ses araması başlat"
+              title="Ses araması"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden>
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+              </svg>
+            </button>
             <button
               onClick={() => setShowMembers((v) => !v)}
               aria-label="Üyeleri göster/gizle"
@@ -309,6 +323,15 @@ export function ChatWindow({ room, me, initialRole }: Props) {
         room={room}
         isOwner={myRole === "owner"}
       />
+
+      {/* Ses araması */}
+      {voiceOpen && (
+        <VoiceCall
+          roomId={room.id}
+          me={me}
+          onClose={() => setVoiceOpen(false)}
+        />
+      )}
     </div>
   );
 }
