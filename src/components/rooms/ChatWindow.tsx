@@ -118,9 +118,9 @@ export function ChatWindow({ room, me, initialRole }: Props) {
   const roomMark = initialsOf(room.name) || "#";
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] flex">
-      <div className="flex-1 flex flex-col min-w-0 relative">
-        <header className="sticky top-0 z-20 border-b border-border/70 bg-bg/65 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/55 px-4 h-14 flex items-center justify-between gap-3">
+    <div className="h-[calc(100dvh-3.5rem)] flex overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <header className="sticky top-0 z-20 border-b border-border/70 bg-bg/65 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/55 px-4 h-14 flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <Link
               href="/rooms"
@@ -154,6 +154,7 @@ export function ChatWindow({ room, me, initialRole }: Props) {
             <button
               onClick={() => setShowMembers((v) => !v)}
               aria-label="Üyeleri göster/gizle"
+              aria-expanded={showMembers}
               className="icon-btn md:hidden"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden>
@@ -220,17 +221,15 @@ export function ChatWindow({ room, me, initialRole }: Props) {
         <MessageComposer roomId={room.id} me={me} />
       </div>
 
-      <aside
-        className={`${
-          showMembers ? "block" : "hidden"
-        } md:block w-72 border-l border-border bg-bg-soft/30 backdrop-blur-sm overflow-y-auto`}
-      >
-        <div className="sticky top-0 z-10 px-4 py-3 bg-bg-soft/80 backdrop-blur border-b border-border/70 flex items-center justify-between">
+      {/* Desktop: sidebar sabit, Mobile: fixed overlay */}
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex md:flex-col w-72 border-l border-border bg-bg-soft/30 backdrop-blur-sm overflow-hidden">
+        <div className="px-4 py-3 bg-bg-soft/80 backdrop-blur border-b border-border/70 flex items-center justify-between shrink-0">
           <span className="text-2xs uppercase tracking-wider font-semibold text-text-muted">
             Üyeler
           </span>
         </div>
-        <div className="p-2">
+        <div className="flex-1 overflow-y-auto p-2">
           <MemberList
             roomId={room.id}
             meId={me.id}
@@ -239,6 +238,41 @@ export function ChatWindow({ room, me, initialRole }: Props) {
           />
         </div>
       </aside>
+
+      {/* Mobile: tam ekran overlay panel */}
+      {showMembers && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in"
+            onClick={() => setShowMembers(false)}
+            aria-hidden
+          />
+          {/* Panel — sağdan kayar, tam yükseklik, bottom nav YOK zaten oda sayfasında */}
+          <div className="fixed top-0 right-0 bottom-0 z-40 w-[80vw] max-w-xs flex flex-col bg-bg border-l border-border shadow-lift md:hidden animate-slide-in-right">
+            <div className="px-4 py-4 border-b border-border/70 flex items-center justify-between shrink-0 bg-bg-soft/80 backdrop-blur">
+              <span className="text-sm font-semibold text-text tracking-tight">Üyeler</span>
+              <button
+                onClick={() => setShowMembers(false)}
+                className="icon-btn !w-8 !h-8"
+                aria-label="Kapat"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4" aria-hidden>
+                  <path d="M18 6 6 18M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-3">
+              <MemberList
+                roomId={room.id}
+                meId={me.id}
+                myRole={myRole}
+                ownerId={room.owner_id}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       <RoomSettings
         open={settingsOpen}
