@@ -86,11 +86,21 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner */}
+      {/* Banner — heatmap arka planda */}
       <div className="relative h-44 sm:h-56 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/40 via-bg-card to-accent-glow/20" />
-        <div aria-hidden className="absolute -top-24 -left-10 w-80 h-80 rounded-full bg-accent/35 blur-[80px] animate-pulse-soft" />
-        <div aria-hidden className="absolute -bottom-28 right-0 w-80 h-80 rounded-full bg-accent-glow/20 blur-[100px]" />
+        {/* Gradient zemin */}
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
+        {/* Glow efektleri */}
+        <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
+        <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
+        {/* Heatmap arka planda — sağ alt köşeye yaslanmış */}
+        <div className="absolute inset-0 flex items-end justify-end p-3 opacity-40">
+          <div className="w-full h-full">
+            <ActivityHeatmap userId={profile.id} bannerMode />
+          </div>
+        </div>
+        {/* Üstten karartma — avatar ve içerik için */}
+        <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-14 pb-12 relative space-y-8">

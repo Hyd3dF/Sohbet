@@ -42,11 +42,18 @@ function ReadOnlyProfile({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner */}
+      {/* Banner — heatmap arka planda */}
       <div className="relative h-44 sm:h-56 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/40 via-bg-card to-accent-glow/20" />
-        <div aria-hidden className="absolute -top-20 -left-10 w-72 h-72 rounded-full bg-accent/35 blur-[80px]" />
-        <div aria-hidden className="absolute -bottom-20 right-10 w-72 h-72 rounded-full bg-accent-glow/25 blur-[90px]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
+        <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
+        <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
+        {/* Heatmap arka planda */}
+        <div className="absolute inset-0 flex items-end justify-end p-3 opacity-40">
+          <div className="w-full h-full">
+            <ActivityHeatmap userId={profile.id} bannerMode />
+          </div>
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
         {/* Back button */}
         <Link
           href="/feed"
