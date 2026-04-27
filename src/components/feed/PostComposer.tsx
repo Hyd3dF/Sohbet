@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
+import { trackActivity } from "@/lib/activity";
 import { cn, randomFileName } from "@/lib/utils";
 import type { Profile } from "@/lib/types/db";
 
@@ -46,6 +47,7 @@ export function PostComposer({ me }: Props) {
         .from("posts")
         .insert({ author_id: me.id, content: content.trim() || "", image_url: imageUrl });
       if (insErr) throw insErr;
+      trackActivity(me.id);
       setContent("");
       pickFile(null);
       setFocused(false);

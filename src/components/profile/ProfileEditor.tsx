@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
+import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
 import { cn, randomFileName } from "@/lib/utils";
 import type { Profile } from "@/lib/types/db";
 
@@ -84,14 +85,15 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
   const bioNearLimit = bioRemaining < 40;
 
   return (
-    <main>
-      <div className="relative h-40 sm:h-52 overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/30 via-bg-card to-accent-glow/15" />
-        <div aria-hidden className="absolute -top-24 -left-10 w-80 h-80 rounded-full bg-accent/30 blur-[90px] animate-pulse-soft" />
+    <main className="pb-16 md:pb-8">
+      {/* Banner */}
+      <div className="relative h-44 sm:h-56 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/40 via-bg-card to-accent-glow/20" />
+        <div aria-hidden className="absolute -top-24 -left-10 w-80 h-80 rounded-full bg-accent/35 blur-[80px] animate-pulse-soft" />
         <div aria-hidden className="absolute -bottom-28 right-0 w-80 h-80 rounded-full bg-accent-glow/20 blur-[100px]" />
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 -mt-14 pb-12 relative">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-14 pb-12 relative space-y-8">
         <div className="flex items-end gap-4">
           <button
             type="button"
@@ -210,6 +212,14 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
               <span aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
             </button>
           </div>
+        </section>
+
+        {/* Aktivite Heatmap */}
+        <section>
+          <h2 className="text-xs font-semibold text-text-muted mb-3 tracking-wide uppercase">
+            Aktivitem
+          </h2>
+          <ActivityHeatmap userId={profile.id} />
         </section>
       </div>
     </main>

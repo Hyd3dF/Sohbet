@@ -62,6 +62,12 @@ export interface Message {
   created_at: string;
 }
 
+export interface UserActivity {
+  user_id: string;
+  date: string; // "2025-04-27"
+  action_count: number;
+}
+
 export interface UserPresence {
   user_id: string;
   is_online: boolean;

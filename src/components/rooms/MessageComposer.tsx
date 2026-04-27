@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AudioRecorder } from "@/components/rooms/AudioRecorder";
+import { trackActivity } from "@/lib/activity";
 import { cn, randomFileName } from "@/lib/utils";
 import type { AttachmentType, Profile } from "@/lib/types/db";
 
@@ -44,6 +45,7 @@ export function MessageComposer({ roomId, me }: Props) {
     setText("");
     const supabase = createClient();
     await supabase.from("messages").insert({ room_id: roomId, author_id: me.id, content });
+    trackActivity(me.id);
     setSending(false);
   }
 
