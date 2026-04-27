@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Avatar } from "@/components/ui/Avatar";
 import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
+import { ProfileBanner } from "@/components/profile/ProfileBanner";
 import { OnlineDot } from "@/components/presence/OnlineDot";
 import type { Profile } from "@/lib/types/db";
 
@@ -15,15 +16,12 @@ export function ReadOnlyProfile({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner */}
-      <div className="relative h-44 sm:h-56 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
-        <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
-        <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
+      {/* Banner with heatmap */}
+      <div className="relative">
+        <ProfileBanner userId={profile.id} />
         <Link
           href="/feed"
-          className="absolute top-4 left-4 icon-btn bg-bg/40 backdrop-blur border border-white/10"
+          className="absolute top-4 left-4 icon-btn bg-bg/40 backdrop-blur border border-white/10 z-10"
           aria-label="Geri"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>

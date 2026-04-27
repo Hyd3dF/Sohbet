@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -28,6 +29,9 @@ export function ChatWindow({ room, me, initialRole }: Props) {
   const [myRole, setMyRole] = useState<RoomRole | null>(initialRole);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -241,17 +245,17 @@ export function ChatWindow({ room, me, initialRole }: Props) {
         </div>
       </aside>
 
-      {/* Mobile: tam ekran overlay panel */}
-      {showMembers && (
+      {/* Mobile: tam ekran overlay panel — Portal ile body'ye render */}
+      {showMembers && mounted && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden animate-fade-in"
+            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm md:hidden animate-fade-in"
             onClick={() => setShowMembers(false)}
             aria-hidden
           />
-          {/* Panel — sağdan kayar, tam yükseklik, bottom nav YOK zaten oda sayfasında */}
-          <div className="fixed top-0 right-0 bottom-0 z-40 w-[80vw] max-w-xs flex flex-col bg-bg border-l border-border shadow-lift md:hidden animate-slide-in-right">
+          {/* Panel */}
+          <div className="fixed top-0 right-0 bottom-0 z-[101] w-[82vw] max-w-xs flex flex-col bg-bg border-l border-border shadow-lift md:hidden animate-slide-in-right">
             <div className="px-4 py-4 border-b border-border/70 flex items-center justify-between shrink-0 bg-bg-soft/80 backdrop-blur">
               <span className="text-sm font-semibold text-text tracking-tight">Üyeler</span>
               <button
@@ -273,7 +277,8 @@ export function ChatWindow({ room, me, initialRole }: Props) {
               />
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       <RoomSettings

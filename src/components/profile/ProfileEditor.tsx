@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { ActivityHeatmap } from "@/components/profile/ActivityHeatmap";
+import { ProfileBanner } from "@/components/profile/ProfileBanner";
 import { cn, randomFileName } from "@/lib/utils";
 import type { Profile } from "@/lib/types/db";
 
@@ -86,13 +87,8 @@ export function ProfileEditor({ profile }: { profile: Profile }) {
 
   return (
     <main className="pb-16 md:pb-8">
-      {/* Banner */}
-      <div className="relative h-44 sm:h-56 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/50 via-[#1a1035] to-accent-glow/30" />
-        <div aria-hidden className="absolute -top-16 -left-10 w-64 h-64 rounded-full bg-accent/40 blur-[70px]" />
-        <div aria-hidden className="absolute -bottom-16 right-0 w-64 h-64 rounded-full bg-accent-glow/30 blur-[80px]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg/60 via-transparent to-transparent" />
-      </div>
+      {/* Banner with heatmap */}
+      <ProfileBanner userId={profile.id} />
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 -mt-14 pb-12 relative space-y-8">
         <div className="flex items-end gap-4">
