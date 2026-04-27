@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
+import { OnlineDot } from "@/components/presence/OnlineDot";
 import { cn } from "@/lib/utils";
 import type { Profile, RoomMember, RoomRole } from "@/lib/types/db";
 
@@ -95,12 +96,17 @@ export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
             key={m.user_id}
             className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-bg-hover/60 transition group"
           >
-            <Avatar
-              url={m.profile?.avatar_url}
-              name={m.profile?.display_name || m.profile?.username || "?"}
-              size={32}
-              className="ring-1 ring-border/60 shrink-0"
-            />
+            <div className="relative shrink-0">
+              <Avatar
+                url={m.profile?.avatar_url}
+                name={m.profile?.display_name || m.profile?.username || "?"}
+                size={32}
+                className="ring-1 ring-border/60"
+              />
+              <span className="absolute -bottom-0.5 -right-0.5">
+                <OnlineDot userId={m.user_id} size="sm" className="ring-2 ring-bg" />
+              </span>
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-sm font-medium truncate">

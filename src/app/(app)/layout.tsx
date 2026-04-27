@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TopBar } from "@/components/nav/TopBar";
+import { PresenceProvider } from "@/components/presence/PresenceProvider";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -35,10 +36,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <TopBar profile={profile} />
-      {/* Bottom nav padding sadece TopBar'ın kendisi yönetiyor, burada ekstra padding yok */}
-      <div className="flex-1">{children}</div>
-    </div>
+    <PresenceProvider userId={user.id}>
+      <div className="min-h-screen flex flex-col">
+        <TopBar profile={profile} />
+        <div className="flex-1">{children}</div>
+      </div>
+    </PresenceProvider>
   );
 }

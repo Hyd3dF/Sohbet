@@ -62,6 +62,12 @@ export interface Message {
   created_at: string;
 }
 
+export interface UserPresence {
+  user_id: string;
+  is_online: boolean;
+  last_seen_at: string;
+}
+
 type Insertable<T, Optional extends keyof T = never> = Omit<T, Optional> &
   Partial<Pick<T, Optional>>;
 
