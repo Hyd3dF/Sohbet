@@ -9,6 +9,8 @@ interface Props {
 
 export function Avatar({ url, name, size = 36, className }: Props) {
   const style = { width: size, height: size, fontSize: Math.round(size * 0.4) };
+  const baseClass =
+    "rounded-full shrink-0 object-cover border border-white/10 bg-bg-soft shadow-[0_6px_20px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.08)]";
   if (url) {
     // eslint-disable-next-line @next/next/no-img-element
     return (
@@ -16,7 +18,7 @@ export function Avatar({ url, name, size = 36, className }: Props) {
         src={url}
         alt={name}
         style={style}
-        className={cn("rounded-full object-cover bg-bg-soft border border-border", className)}
+        className={cn(baseClass, className)}
       />
     );
   }
@@ -24,7 +26,8 @@ export function Avatar({ url, name, size = 36, className }: Props) {
     <div
       style={style}
       className={cn(
-        "rounded-full grid place-items-center bg-gradient-to-br from-accent to-accent-glow text-white font-semibold select-none",
+        baseClass,
+        "grid place-items-center bg-[radial-gradient(circle_at_35%_25%,#b7a9ff_0%,#7c5cff_48%,#5b3be8_100%)] text-white font-semibold select-none",
         className,
       )}
     >

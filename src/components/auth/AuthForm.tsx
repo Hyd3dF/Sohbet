@@ -20,7 +20,6 @@ export function AuthForm({ mode }: Props) {
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const isLogin = mode === "login";
@@ -40,7 +39,6 @@ export function AuthForm({ mode }: Props) {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setInfo(null);
 
     if (!isLogin) {
       if (!displayName.trim()) {
@@ -62,43 +60,43 @@ export function AuthForm({ mode }: Props) {
           password,
           options: {
             data: { display_name: displayName.trim() },
-            emailRedirectTo:
-              typeof window !== "undefined"
-                ? `${window.location.origin}/auth/callback`
-                : undefined,
           },
         });
         if (error) throw error;
 
-        if (data.session && data.user) {
-          let avatarUrl: string | null = null;
-          if (avatarFile) {
-            const path = `${data.user.id}/${randomFileName(avatarFile.name)}`;
-            const { error: upErr } = await supabase.storage
-              .from("avatars")
-              .upload(path, avatarFile, {
-                contentType: avatarFile.type,
-                upsert: true,
-              });
-            if (!upErr) {
-              avatarUrl = supabase.storage.from("avatars").getPublicUrl(path)
-                .data.publicUrl;
-            }
+        const signInResult = data.session
+          ? { data, error: null }
+          : await supabase.auth.signInWithPassword({ email, password });
+        if (signInResult.error) throw signInResult.error;
+
+        const userId = signInResult.data.user?.id ?? data.user?.id;
+        let avatarUrl: string | null = null;
+        if (avatarFile && userId) {
+          const path = `${userId}/${randomFileName(avatarFile.name)}`;
+          const { error: upErr } = await supabase.storage
+            .from("avatars")
+            .upload(path, avatarFile, {
+              contentType: avatarFile.type,
+              upsert: true,
+            });
+          if (!upErr) {
+            avatarUrl = supabase.storage.from("avatars").getPublicUrl(path)
+              .data.publicUrl;
           }
+        }
+        if (userId) {
           await supabase
             .from("profiles")
             .update({
               display_name: displayName.trim() || null,
               ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
             })
-            .eq("id", data.user.id);
-          router.push("/feed");
-          router.refresh();
-          return;
+            .eq("id", userId);
         }
-        setInfo(
-          "Hesabın oluşturuldu. E-posta adresini doğruladıktan sonra giriş yapabilirsin.",
-        );
+        router.push("/feed");
+        router.refresh();
+        return;
+
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -215,12 +213,6 @@ export function AuthForm({ mode }: Props) {
                 {error}
               </Notice>
             )}
-            {info && (
-              <Notice tone="success" role="status">
-                {info}
-              </Notice>
-            )}
-
             <button
               type="submit"
               disabled={loading}

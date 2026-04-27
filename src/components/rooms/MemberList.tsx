@@ -22,9 +22,6 @@ const ROLE_ORDER: Record<RoomRole, number> = { owner: 0, admin: 1, member: 2 };
 
 export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
   const [members, setMembers] = useState<MemberRow[]>([]);
-  // useId — bileşen birden fazla yerde mount edilirse her instance'a benzersiz
-  // bir Supabase realtime kanalı verir. Aynı topic adına çift abonelik
-  // realtime client'ı tutarsız bir state'e sokabiliyor.
   const instanceId = useId();
 
   useEffect(() => {
@@ -86,86 +83,125 @@ export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
     return an.localeCompare(bn, "tr");
   });
 
+  const grouped = {
+    owner: sorted.filter((m) => m.role === "owner"),
+    admin: sorted.filter((m) => m.role === "admin"),
+    member: sorted.filter((m) => m.role === "member"),
+  };
+
   return (
-    <div className="space-y-0.5">
-      {sorted.map((m) => {
-        const isOwner = m.user_id === ownerId;
-        const isMe = m.user_id === meId;
-        const canActOnThis =
-          canManage && !isOwner && !isMe &&
-          (myRole === "owner" || (myRole === "admin" && m.role !== "owner"));
+    <div className="space-y-3">
+      {grouped.owner.length > 0 && (
+        <MemberGroup label="Sahip" members={grouped.owner} meId={meId} ownerId={ownerId} canManage={canManage} myRole={myRole} onChangeRole={changeRole} onRemove={removeMember} />
+      )}
+      {grouped.admin.length > 0 && (
+        <MemberGroup label="Yetkililer" members={grouped.admin} meId={meId} ownerId={ownerId} canManage={canManage} myRole={myRole} onChangeRole={changeRole} onRemove={removeMember} />
+      )}
+      {grouped.member.length > 0 && (
+        <MemberGroup label="Üyeler" members={grouped.member} meId={meId} ownerId={ownerId} canManage={canManage} myRole={myRole} onChangeRole={changeRole} onRemove={removeMember} />
+      )}
+    </div>
+  );
+}
 
-        return (
-          <div
-            key={m.user_id}
-            className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-bg-hover/60 transition group"
-          >
-            <div className="relative shrink-0">
-              <Avatar
-                url={m.profile?.avatar_url}
-                name={m.profile?.display_name || m.profile?.username || "?"}
-                size={32}
-                className="ring-1 ring-border/60"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5">
-                <OnlineDot userId={m.user_id} size="sm" className="ring-2 ring-bg" />
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-medium truncate">
-                  {m.profile?.display_name || m.profile?.username}
+function MemberGroup({
+  label, members, meId, ownerId, canManage, myRole, onChangeRole, onRemove,
+}: {
+  label: string;
+  members: MemberRow[];
+  meId: string;
+  ownerId: string;
+  canManage: boolean;
+  myRole: RoomRole | null;
+  onChangeRole: (userId: string, role: RoomRole) => void;
+  onRemove: (userId: string) => void;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 px-2 mb-1.5">
+        <span className="text-2xs uppercase tracking-wider font-bold text-text-dim">{label}</span>
+        <span className="text-2xs tabular-nums text-text-faint font-medium">{members.length}</span>
+      </div>
+      <div className="space-y-0.5">
+        {members.map((m) => {
+          const isOwner = m.user_id === ownerId;
+          const isMe = m.user_id === meId;
+          const canActOnThis =
+            canManage && !isOwner && !isMe &&
+            (myRole === "owner" || (myRole === "admin" && m.role !== "owner"));
+
+          return (
+            <div
+              key={m.user_id}
+              className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-bg-hover/60 transition-colors group"
+            >
+              <div className="relative shrink-0">
+                <Avatar
+                  url={m.profile?.avatar_url}
+                  name={m.profile?.display_name || m.profile?.username || "?"}
+                  size={34}
+                  className="ring-1 ring-border/40"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5">
+                  <OnlineDot userId={m.user_id} size="sm" className="ring-2 ring-bg" />
                 </span>
-                {isMe && (
-                  <span className="text-[10px] uppercase tracking-wider text-text-dim font-medium">
-                    sen
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-semibold truncate leading-tight">
+                    {m.profile?.display_name || m.profile?.username}
                   </span>
-                )}
+                  {isMe && (
+                    <span className="text-2xs px-1.5 py-0.5 rounded bg-accent-soft text-accent-glow font-bold uppercase tracking-wider">
+                      sen
+                    </span>
+                  )}
+                </div>
+                <RoleBadge role={m.role} />
               </div>
-              <RoleBadge role={m.role} />
-            </div>
 
-            {canActOnThis && (
-              <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition flex items-center gap-0.5">
-                {m.role === "member" && (
+              {canActOnThis && (
+                <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center gap-0.5">
+                  {m.role === "member" && (
+                    <button
+                      onClick={() => onChangeRole(m.user_id, "admin")}
+                      title="Yetkili yap"
+                      aria-label="Yetkili yap"
+                      className="w-7 h-7 grid place-items-center rounded-lg text-text-muted hover:text-success hover:bg-success/10 transition-colors"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
+                        <path d="m18 15-6-6-6 6" />
+                      </svg>
+                    </button>
+                  )}
+                  {m.role === "admin" && myRole === "owner" && (
+                    <button
+                      onClick={() => onChangeRole(m.user_id, "member")}
+                      title="Üye yap"
+                      aria-label="Üye yap"
+                      className="w-7 h-7 grid place-items-center rounded-lg text-text-muted hover:text-text hover:bg-bg-soft transition-colors"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </button>
+                  )}
                   <button
-                    onClick={() => changeRole(m.user_id, "admin")}
-                    title="Yetkili yap"
-                    aria-label="Yetkili yap"
-                    className="w-7 h-7 grid place-items-center rounded-md text-text-muted hover:text-success hover:bg-success-soft transition"
+                    onClick={() => onRemove(m.user_id)}
+                    title="Odadan çıkar"
+                    aria-label="Odadan çıkar"
+                    className="w-7 h-7 grid place-items-center rounded-lg text-text-muted hover:text-danger hover:bg-danger/10 transition-colors"
                   >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
-                      <path d="m18 15-6-6-6 6" />
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-3.5 h-3.5" aria-hidden>
+                      <path d="M18 6 6 18M6 6l12 12" />
                     </svg>
                   </button>
-                )}
-                {m.role === "admin" && myRole === "owner" && (
-                  <button
-                    onClick={() => changeRole(m.user_id, "member")}
-                    title="Üye yap"
-                    aria-label="Üye yap"
-                    className="w-7 h-7 grid place-items-center rounded-md text-text-muted hover:text-text hover:bg-bg-soft transition"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
-                      <path d="m6 9 6 6 6-6" />
-                    </svg>
-                  </button>
-                )}
-                <button
-                  onClick={() => removeMember(m.user_id)}
-                  title="Odadan çıkar"
-                  aria-label="Odadan çıkar"
-                  className="w-7 h-7 grid place-items-center rounded-md text-text-muted hover:text-danger hover:bg-danger-soft transition"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-3.5 h-3.5" aria-hidden>
-                    <path d="M18 6 6 18M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-        );
-      })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -174,7 +210,7 @@ function RoleBadge({ role }: { role: RoomRole }) {
   const map: Record<RoomRole, { label: string; cls: string; icon: React.ReactNode }> = {
     owner: {
       label: "Sahip",
-      cls: "bg-warn/10 text-warn border-warn/30",
+      cls: "bg-warn/12 text-warn border-warn/25",
       icon: (
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-2.5 h-2.5" aria-hidden>
           <path d="M3 7l4 5 5-7 5 7 4-5v10H3z" />
@@ -183,7 +219,7 @@ function RoleBadge({ role }: { role: RoomRole }) {
     },
     admin: {
       label: "Yetkili",
-      cls: "bg-success-soft text-success border-success/30",
+      cls: "bg-success/10 text-success border-success/25",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-2.5 h-2.5" aria-hidden>
           <path d="M20 6 9 17l-5-5" />
@@ -192,7 +228,7 @@ function RoleBadge({ role }: { role: RoomRole }) {
     },
     member: {
       label: "Üye",
-      cls: "bg-bg-soft text-text-dim border-border",
+      cls: "bg-bg-soft text-text-dim border-border/50",
       icon: null,
     },
   };
@@ -200,7 +236,7 @@ function RoleBadge({ role }: { role: RoomRole }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded-full border text-[10px] font-medium",
+        "inline-flex items-center gap-1 mt-0.5 px-1.5 py-0.5 rounded-md border text-[10px] font-semibold",
         r.cls,
       )}
     >
