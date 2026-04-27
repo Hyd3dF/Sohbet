@@ -27,7 +27,6 @@ export async function POST(req: NextRequest) {
       room: roomId,
       canPublish: true,
       canSubscribe: true,
-      canPublishSources: ["microphone"],
     });
 
     const jwt = await token.toJwt();
