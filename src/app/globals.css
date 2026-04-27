@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 @layer base {
   html,
   body {
@@ -11,63 +13,73 @@
     color-scheme: dark;
   }
   body {
-    @apply bg-bg text-text antialiased font-sans;
-    font-feature-settings: "cv11", "ss01", "ss03", "tnum";
+    @apply bg-bg text-text antialiased;
+    font-family: 'Outfit', 'ui-sans-serif', system-ui, sans-serif;
+    font-feature-settings: "tnum";
     background-image:
-      radial-gradient(900px 500px at 85% -10%, rgba(124, 92, 255, 0.10), transparent 60%),
-      radial-gradient(700px 420px at -10% 110%, rgba(124, 92, 255, 0.07), transparent 60%);
+      radial-gradient(ellipse 80% 50% at 70% -20%, rgba(124, 92, 255, 0.13), transparent 65%),
+      radial-gradient(ellipse 60% 40% at -10% 110%, rgba(124, 92, 255, 0.08), transparent 60%),
+      radial-gradient(ellipse 40% 30% at 50% 50%, rgba(20, 15, 40, 0.5), transparent 70%);
     background-attachment: fixed;
   }
   ::selection {
-    @apply bg-accent/35 text-white;
+    @apply bg-accent/30 text-white;
   }
   :focus-visible {
     @apply outline-none;
   }
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 5px;
+    height: 5px;
   }
   ::-webkit-scrollbar-thumb {
-    background: #232838;
+    background: #2a2f42;
     border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #2f3648;
-    background-clip: padding-box;
+    background: #363d55;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
+  }
+
+  /* Mobile safe area support */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pb-safe {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
 @layer components {
   .glass {
-    @apply bg-bg-card/75 backdrop-blur-xl border border-border/80 rounded-2xl shadow-soft;
+    @apply bg-bg-card/80 backdrop-blur-xl border border-border/70 rounded-2xl shadow-soft;
   }
   .glass-flat {
     @apply bg-bg-card border border-border rounded-2xl;
   }
+  .glass-hover {
+    @apply glass transition-all duration-200 hover:border-border-strong hover:shadow-lift hover:-translate-y-0.5;
+  }
 
   .input-base {
-    @apply w-full bg-bg-soft border border-border rounded-xl px-4 py-2.5 text-[15px] text-text
-           placeholder:text-text-dim transition
+    @apply w-full bg-bg-inset border border-border rounded-xl px-4 py-3 text-[15px] text-text
+           placeholder:text-text-dim transition-all duration-150
            hover:border-border-strong
-           focus:outline-none focus:border-accent/60 focus:shadow-ring-focus;
+           focus:outline-none focus:border-accent/50 focus:bg-bg-soft focus:shadow-ring-focus;
   }
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5
-           font-medium text-sm tracking-tight transition
-           active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed
-           focus:outline-none focus-visible:shadow-ring-focus;
+           font-semibold text-sm tracking-tight transition-all duration-150
+           active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed
+           focus:outline-none focus-visible:shadow-ring-focus select-none;
   }
   .btn-primary {
-    @apply btn text-white shadow-glow-soft hover:shadow-glow
+    @apply btn text-white shadow-glow-soft
            bg-gradient-to-b from-accent-glow to-accent
-           hover:from-accent hover:to-accent-hover;
+           hover:shadow-glow hover:brightness-110 active:brightness-95;
   }
   .btn-ghost {
     @apply btn bg-bg-soft hover:bg-bg-hover text-text
@@ -76,25 +88,65 @@
   .btn-danger {
     @apply btn bg-danger-soft hover:bg-danger/25 text-danger border border-danger/30;
   }
+  .btn-icon {
+    @apply btn !p-0 w-9 h-9 rounded-lg bg-transparent hover:bg-bg-soft text-text-muted hover:text-text border-0;
+  }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-2xs font-medium
-           bg-bg-soft border border-border text-text-muted;
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-2xs font-semibold
+           bg-bg-soft border border-border text-text-muted tracking-wide uppercase;
   }
   .chip-accent {
-    @apply chip bg-accent-soft border-accent/30 text-accent-glow;
+    @apply chip bg-accent-soft border-accent/25 text-accent-glow;
   }
   .chip-success {
-    @apply chip bg-success-soft border-success/30 text-success;
+    @apply chip bg-success-soft border-success/25 text-success;
+  }
+  .chip-warn {
+    @apply chip bg-warn-soft border-warn/25 text-warn;
   }
 
   .icon-btn {
-    @apply inline-flex items-center justify-center w-9 h-9 rounded-lg
-           text-text-muted hover:text-text hover:bg-bg-soft transition
-           focus:outline-none focus-visible:shadow-ring-focus;
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-xl
+           text-text-muted hover:text-text hover:bg-bg-soft transition-all duration-150
+           focus:outline-none focus-visible:shadow-ring-focus active:scale-95;
   }
 
   .divider {
     @apply h-px bg-border-soft;
+  }
+
+  /* Bottom nav for mobile */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50
+           bg-bg/90 backdrop-blur-2xl border-t border-border/60
+           flex items-center justify-around
+           px-2 pb-safe pt-2
+           md:hidden;
+  }
+
+  .bottom-nav-item {
+    @apply flex flex-col items-center gap-1 px-4 py-1 rounded-xl
+           text-text-dim transition-all duration-150
+           focus:outline-none active:scale-90;
+  }
+
+  .bottom-nav-item.active {
+    @apply text-accent-glow;
+  }
+
+  /* Skeleton loading */
+  .skeleton {
+    @apply bg-bg-soft rounded-xl animate-pulse;
+  }
+
+  /* Message bubble gradient for own messages */
+  .bubble-mine {
+    background: linear-gradient(135deg, #9b87ff 0%, #7c5cff 60%, #6a48ff 100%);
+  }
+
+  /* Smooth page transitions */
+  .page-enter {
+    @apply animate-fade-in;
   }
 }

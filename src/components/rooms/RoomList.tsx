@@ -16,6 +16,20 @@ interface RoomWithMeta extends Room {
   is_member: boolean;
 }
 
+const ROOM_COLORS = [
+  "from-violet-500 to-purple-600",
+  "from-blue-500 to-cyan-500",
+  "from-emerald-500 to-teal-500",
+  "from-orange-500 to-red-500",
+  "from-pink-500 to-rose-500",
+  "from-amber-500 to-yellow-500",
+];
+
+function getRoomColor(id: string) {
+  const hash = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return ROOM_COLORS[hash % ROOM_COLORS.length];
+}
+
 export function RoomList({ me }: Props) {
   const [rooms, setRooms] = useState<RoomWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,9 +79,7 @@ export function RoomList({ me }: Props) {
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [me.id]);
 
   async function joinRoom(roomId: string) {
@@ -86,38 +98,61 @@ export function RoomList({ me }: Props) {
     );
   }
 
+  const myRooms = rooms.filter((r) => r.is_member);
+  const otherRooms = rooms.filter((r) => !r.is_member);
+
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-      <header className="flex items-end justify-between gap-4">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+      {/* Header */}
+      <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Odalar</h1>
           <p className="text-text-muted text-sm mt-1">
-            Arkadaşlarınla sohbet odası kur veya mevcut bir odaya katıl.
+            Sohbet odaları kur, arkadaşlarınla bağlantıda kal.
           </p>
         </div>
         <button
           onClick={() => setCreateOpen(true)}
-          className="relative overflow-hidden btn-primary !py-2 !px-3.5 group shrink-0"
+          className="btn-primary !py-2 !px-4 shrink-0 group"
         >
-          <span className="relative z-10 inline-flex items-center gap-1.5">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="w-4 h-4" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span className="hidden sm:inline">Yeni Oda</span>
-          </span>
-          <span aria-hidden className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms] ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="w-4 h-4 transition-transform group-hover:rotate-90 duration-200" aria-hidden>
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          <span className="hidden sm:inline">Yeni Oda</span>
         </button>
       </header>
 
       {loading ? (
-        <Loading />
+        <LoadingGrid />
       ) : rooms.length === 0 ? (
         <Empty onCreate={() => setCreateOpen(true)} />
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {rooms.map((r) => (
-            <RoomCard key={r.id} room={r} onJoin={() => joinRoom(r.id)} />
-          ))}
+        <div className="space-y-8">
+          {myRooms.length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold text-text-dim uppercase tracking-widest mb-3 px-1">
+                Odalarım · {myRooms.length}
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {myRooms.map((r) => (
+                  <RoomCard key={r.id} room={r} onJoin={() => joinRoom(r.id)} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {otherRooms.length > 0 && (
+            <section>
+              <h2 className="text-xs font-semibold text-text-dim uppercase tracking-widest mb-3 px-1">
+                Keşfet · {otherRooms.length}
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {otherRooms.map((r) => (
+                  <RoomCard key={r.id} room={r} onJoin={() => joinRoom(r.id)} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       )}
 
@@ -133,62 +168,89 @@ export function RoomList({ me }: Props) {
 function RoomCard({ room, onJoin }: { room: RoomWithMeta; onJoin: () => void }) {
   const fillPct = Math.min(100, Math.round((room.member_count / room.max_members) * 100));
   const initials = initialsOf(room.name) || "#";
+  const colorClass = getRoomColor(room.id);
+  const isFull = room.member_count >= room.max_members;
 
   return (
-    <article className="glass p-4 flex flex-col gap-3 transition hover:-translate-y-0.5 hover:shadow-lift hover:border-border-strong">
+    <article className="glass group flex flex-col gap-4 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift hover:border-border-strong animate-fade-in">
+      {/* Room header */}
       <div className="flex items-start gap-3">
         <div
           aria-hidden
-          className="w-11 h-11 rounded-xl grid place-items-center text-white font-semibold text-base shrink-0 bg-gradient-to-br from-accent to-accent-glow shadow-glow-soft"
+          className={cn(
+            "w-12 h-12 rounded-2xl grid place-items-center text-white font-bold text-base shrink-0 shadow-soft transition-transform group-hover:scale-105 duration-200 bg-gradient-to-br",
+            colorClass,
+          )}
         >
           {initials}
         </div>
-        <div className="min-w-0 flex-1">
-          <h3 className="font-semibold tracking-tight truncate">{room.name}</h3>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-semibold tracking-tight truncate leading-snug">{room.name}</h3>
+            <PrivacyChip isPrivate={room.is_private} />
+          </div>
           {room.description ? (
-            <p className="text-xs text-text-muted line-clamp-2 mt-0.5 leading-relaxed">
+            <p className="text-xs text-text-muted line-clamp-2 mt-1 leading-relaxed">
               {room.description}
             </p>
           ) : (
-            <p className="text-xs text-text-dim mt-0.5">Açıklama yok</p>
+            <p className="text-xs text-text-dim mt-1 italic">Açıklama yok</p>
           )}
         </div>
-        <PrivacyChip isPrivate={room.is_private} />
       </div>
 
+      {/* Member progress */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between text-xs text-text-dim tabular-nums">
-          <span className="inline-flex items-center gap-1">
+        <div className="flex items-center justify-between text-xs text-text-dim">
+          <span className="inline-flex items-center gap-1.5">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
               <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-            {room.member_count} / {room.max_members}
+            <span className="tabular-nums font-medium">{room.member_count}</span>
+            <span className="opacity-50">/ {room.max_members}</span>
           </span>
-          <span>{fillPct}%</span>
+          <span className={cn("font-semibold tabular-nums", fillPct >= 90 ? "text-warn" : "text-text-dim")}>
+            {fillPct}%
+          </span>
         </div>
-        <div className="h-1 rounded-full bg-bg-inset overflow-hidden">
+        <div className="h-1.5 rounded-full bg-bg-inset overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-accent to-accent-glow transition-all"
+            className={cn(
+              "h-full rounded-full transition-all duration-500 bg-gradient-to-r",
+              fillPct >= 90 ? "from-warn to-orange-400" : colorClass,
+            )}
             style={{ width: `${fillPct}%` }}
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-end pt-1">
+      {/* Action */}
+      <div className="flex items-center justify-end pt-1 border-t border-border-soft">
         {room.is_member ? (
-          <Link href={`/rooms/${room.id}`} className="btn-primary !py-1.5 !px-3 text-sm group">
-            <span className="inline-flex items-center gap-1">
-              Aç
-              <span className="transition-transform group-hover:translate-x-0.5">→</span>
+          <Link href={`/rooms/${room.id}`} className="btn-primary !py-1.5 !px-4 text-sm group/btn">
+            <span className="inline-flex items-center gap-1.5">
+              Gir
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-0.5" aria-hidden>
+                <path d="m9 18 6-6-6-6" />
+              </svg>
             </span>
           </Link>
+        ) : isFull ? (
+          <span className="text-xs text-text-dim font-medium">Oda dolu</span>
         ) : !room.is_private ? (
-          <button onClick={onJoin} className="btn-ghost !py-1.5 !px-3 text-sm">
+          <button onClick={onJoin} className="btn-ghost !py-1.5 !px-4 text-sm">
             Katıl
           </button>
         ) : (
-          <span className="text-xs text-text-dim">Davet gerekli</span>
+          <span className="text-xs text-warn font-medium inline-flex items-center gap-1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5" aria-hidden>
+              <rect x="4" y="11" width="16" height="10" rx="2" />
+              <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            </svg>
+            Davet gerekli
+          </span>
         )}
       </div>
     </article>
@@ -197,61 +259,50 @@ function RoomCard({ room, onJoin }: { room: RoomWithMeta; onJoin: () => void }) 
 
 function PrivacyChip({ isPrivate }: { isPrivate: boolean }) {
   return (
-    <span
-      className={cn(
-        "chip shrink-0",
-        isPrivate
-          ? "bg-warn/10 border-warn/30 text-warn"
-          : "bg-success-soft border-success/30 text-success",
-      )}
-    >
-      {isPrivate ? (
-        <>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3" aria-hidden>
-            <rect x="4" y="11" width="16" height="10" rx="2" />
-            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
-          </svg>
-          Özel
-        </>
-      ) : (
-        <>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.85" strokeLinecap="round" strokeLinejoin="round" className="w-3 h-3" aria-hidden>
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          Açık
-        </>
-      )}
+    <span className={cn("chip shrink-0", isPrivate ? "chip-warn" : "chip-success")}>
+      {isPrivate ? "Özel" : "Açık"}
     </span>
   );
 }
 
-function Loading() {
+function LoadingGrid() {
   return (
-    <div className="flex items-center justify-center gap-2 py-12 text-text-muted text-sm">
-      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden>
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v3a5 5 0 0 0-5 5H4z" />
-      </svg>
-      Yükleniyor…
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="glass p-4 space-y-4 animate-pulse">
+          <div className="flex items-start gap-3">
+            <div className="skeleton w-12 h-12 rounded-2xl" />
+            <div className="flex-1 space-y-2">
+              <div className="skeleton h-4 w-3/4 rounded" />
+              <div className="skeleton h-3 w-full rounded" />
+            </div>
+          </div>
+          <div className="skeleton h-1.5 w-full rounded-full" />
+          <div className="flex justify-end">
+            <div className="skeleton h-8 w-20 rounded-xl" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 function Empty({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="glass p-10 text-center space-y-3 animate-fade-in">
-      <div className="mx-auto w-12 h-12 rounded-2xl grid place-items-center bg-accent-soft border border-accent/20 text-accent-glow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6" aria-hidden>
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z" />
+    <div className="glass p-12 text-center space-y-4 animate-fade-in">
+      <div className="mx-auto w-14 h-14 rounded-2xl grid place-items-center bg-accent-soft border border-accent/20 text-accent-glow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7" aria-hidden>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </div>
-      <div className="font-semibold tracking-tight">Henüz oda yok</div>
-      <p className="text-sm text-text-muted max-w-xs mx-auto leading-relaxed">
-        İlk odayı sen oluştur — açık ya da özel, kapasiteyi sen belirle.
-      </p>
-      <button onClick={onCreate} className="btn-primary !py-1.5 !px-3.5 text-sm mt-1">
-        + Yeni Oda
+      <div>
+        <div className="font-bold text-lg tracking-tight">Henüz oda yok</div>
+        <p className="text-sm text-text-muted mt-2 max-w-xs mx-auto leading-relaxed">
+          İlk odayı sen oluştur — açık ya da özel, kapasiteyi sen belirle.
+        </p>
+      </div>
+      <button onClick={onCreate} className="btn-primary !py-2 !px-5">
+        + Yeni Oda Oluştur
       </button>
     </div>
   );

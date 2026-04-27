@@ -11,24 +11,23 @@ interface Props {
   profile: Profile;
 }
 
-const links = [
+const navLinks = [
   {
     href: "/feed",
     label: "Akış",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
-        <path d="M3 12h18M3 6h18M3 18h12" />
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden>
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
       </svg>
     ),
   },
   {
     href: "/rooms",
     label: "Odalar",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+    icon: (active: boolean) => (
+      <svg viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
   },
@@ -46,24 +45,27 @@ export function TopBar({ profile }: Props) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-bg/65 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/55">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1 sm:gap-3 min-w-0">
+    <>
+      {/* Desktop/Tablet TopBar */}
+      <header className="sticky top-0 z-40 border-b border-border/50 bg-bg/70 backdrop-blur-2xl supports-[backdrop-filter]:bg-bg/60">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Logo */}
           <Link
             href="/feed"
-            className="group flex items-center gap-2 font-bold text-lg tracking-tight px-1 -mx-1 rounded-lg focus:outline-none focus-visible:shadow-ring-focus"
+            className="group flex items-center gap-2.5 font-bold tracking-tight rounded-xl px-1 focus:outline-none focus-visible:shadow-ring-focus"
           >
-            <span className="relative grid place-items-center w-7 h-7 rounded-lg bg-gradient-to-br from-accent to-accent-glow text-white shadow-glow-soft">
-              <span className="text-[13px] font-bold leading-none">S</span>
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-success ring-2 ring-bg" aria-hidden />
-            </span>
-            <span className="hidden sm:inline bg-gradient-to-r from-accent-glow to-accent bg-clip-text text-transparent">
+            <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-accent-glow to-accent grid place-items-center shadow-glow-soft">
+              <span className="text-white text-sm font-black leading-none">S</span>
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-success ring-2 ring-bg animate-pulse-soft" aria-hidden />
+            </div>
+            <span className="hidden sm:inline text-lg bg-gradient-to-r from-text to-text-muted bg-clip-text text-transparent group-hover:from-accent-glow group-hover:to-accent transition-all duration-300">
               Sohbet
             </span>
           </Link>
 
-          <nav className="flex items-center gap-1 ml-1 sm:ml-2" aria-label="Birincil">
-            {links.map((l) => {
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-1" aria-label="Ana menü">
+            {navLinks.map((l) => {
               const active = pathname.startsWith(l.href);
               return (
                 <Link
@@ -71,57 +73,112 @@ export function TopBar({ profile }: Props) {
                   href={l.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition",
+                    "inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-150",
                     "focus:outline-none focus-visible:shadow-ring-focus",
                     active
-                      ? "bg-accent-soft text-accent-glow border border-accent/25 shadow-glow-soft"
-                      : "text-text-muted border border-transparent hover:text-text hover:bg-bg-soft",
+                      ? "bg-accent-soft text-accent-glow border border-accent/20"
+                      : "text-text-muted hover:text-text hover:bg-bg-soft border border-transparent",
                   )}
                 >
-                  <span className={cn("transition", active ? "opacity-100" : "opacity-70")}>
-                    {l.icon}
-                  </span>
+                  {l.icon(active)}
                   {l.label}
                 </Link>
               );
             })}
           </nav>
-        </div>
 
-        <div className="flex items-center gap-1.5">
-          <Link
-            href={`/profile/${profile.id}`}
+          {/* Right side */}
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/profile/${profile.id}`}
+              className={cn(
+                "group inline-flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-2xl transition-all duration-150",
+                "border border-border/60 bg-bg-soft/50 hover:bg-bg-hover hover:border-border-strong",
+                "focus:outline-none focus-visible:shadow-ring-focus",
+                pathname.startsWith("/profile") && "border-accent/20 bg-accent-soft/40",
+              )}
+            >
+              <Avatar
+                url={profile.avatar_url}
+                name={profile.display_name || profile.username}
+                size={28}
+                className="ring-1 ring-white/10"
+              />
+              <span className="text-sm font-medium hidden sm:inline max-w-[8rem] truncate text-text">
+                {profile.display_name || profile.username}
+              </span>
+            </Link>
+
+            <button
+              onClick={logout}
+              title="Çıkış"
+              aria-label="Çıkış yap"
+              className="icon-btn text-text-dim hover:text-danger"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-[17px] h-[17px]" aria-hidden>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="bottom-nav" aria-label="Mobil menü">
+        {navLinks.map((l) => {
+          const active = pathname.startsWith(l.href);
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "bottom-nav-item",
+                active && "active",
+              )}
+            >
+              <span className={cn(
+                "transition-transform duration-150",
+                active ? "scale-110" : "scale-100",
+              )}>
+                {l.icon(active)}
+              </span>
+              <span className={cn(
+                "text-[10px] font-semibold tracking-wide",
+                active ? "opacity-100" : "opacity-50",
+              )}>
+                {l.label}
+              </span>
+            </Link>
+          );
+        })}
+
+        <Link
+          href={`/profile/${profile.id}`}
+          className={cn(
+            "bottom-nav-item",
+            pathname.startsWith("/profile") && "active",
+          )}
+        >
+          <Avatar
+            url={profile.avatar_url}
+            name={profile.display_name || profile.username}
+            size={26}
             className={cn(
-              "group inline-flex items-center gap-2 pl-1 pr-3 py-1 rounded-full transition",
-              "border border-border/70 bg-bg-soft/60 hover:bg-bg-hover hover:border-border-strong",
-              "focus:outline-none focus-visible:shadow-ring-focus",
+              "ring-2 transition-all",
+              pathname.startsWith("/profile") ? "ring-accent-glow" : "ring-border",
             )}
-          >
-            <Avatar
-              url={profile.avatar_url}
-              name={profile.display_name || profile.username}
-              size={26}
-              className="ring-1 ring-border/60"
-            />
-            <span className="text-sm font-medium hidden sm:inline max-w-[10rem] truncate">
-              {profile.display_name || profile.username}
-            </span>
-          </Link>
-
-          <button
-            onClick={logout}
-            title="Çıkış"
-            aria-label="Çıkış yap"
-            className="icon-btn"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden>
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <path d="m16 17 5-5-5-5" />
-              <path d="M21 12H9" />
-            </svg>
-          </button>
-        </div>
-      </div>
-    </header>
+          />
+          <span className={cn(
+            "text-[10px] font-semibold tracking-wide",
+            pathname.startsWith("/profile") ? "opacity-100 text-accent-glow" : "opacity-50",
+          )}>
+            Profil
+          </span>
+        </Link>
+      </nav>
+    </>
   );
 }

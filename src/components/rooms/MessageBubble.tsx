@@ -23,69 +23,73 @@ export function MessageBubble({ message, meId, myRole, onDelete, grouped = false
   return (
     <div
       className={cn(
-        "group flex gap-2 px-3",
+        "group flex gap-2.5 px-3 sm:px-4",
         isMine ? "flex-row-reverse" : "flex-row",
-        grouped ? "mt-0.5" : "mt-3",
+        grouped ? "mt-0.5" : "mt-4",
       )}
     >
-      <div className="w-8 shrink-0">
+      {/* Avatar */}
+      <div className="w-8 shrink-0 mt-auto">
         {!isMine && !grouped && (
           <Avatar
             url={message.author?.avatar_url}
             name={message.author?.display_name || message.author?.username || "?"}
             size={32}
-            className="ring-1 ring-border/60"
+            className="ring-1 ring-white/10"
           />
         )}
       </div>
 
+      {/* Bubble */}
       <div
         className={cn(
-          "max-w-[75%] min-w-0 flex flex-col",
+          "max-w-[78%] sm:max-w-[65%] min-w-0 flex flex-col gap-1",
           isMine ? "items-end" : "items-start",
         )}
       >
+        {/* Author name */}
         {!isMine && !grouped && (
-          <div className="text-xs text-text-muted mb-1 px-1 font-medium">
+          <div className="text-xs text-text-muted px-1 font-semibold">
             {message.author?.display_name || message.author?.username}
           </div>
         )}
 
+        {/* Bubble content */}
         <div
           className={cn(
-            "px-3.5 py-2 break-words text-[15px] leading-relaxed shadow-soft transition",
+            "px-3.5 py-2.5 break-words text-[14.5px] leading-relaxed max-w-full",
             isMine
-              ? "bg-gradient-to-br from-accent-glow to-accent text-white"
-              : "bg-bg-card border border-border text-text",
-            // iOS-style asymmetric corners — softened on grouped messages
+              ? "bubble-mine text-white shadow-glow-soft"
+              : "bg-bg-card border border-border text-text shadow-soft",
+            // Corner radius
             isMine
               ? grouped
-                ? "rounded-2xl rounded-r-md"
-                : "rounded-2xl rounded-br-md"
+                ? "rounded-2xl rounded-tr-md"
+                : "rounded-2xl rounded-tr-sm"
               : grouped
-                ? "rounded-2xl rounded-l-md"
-                : "rounded-2xl rounded-bl-md",
+                ? "rounded-2xl rounded-tl-md"
+                : "rounded-2xl rounded-tl-sm",
             !hasText && att ? "p-1.5" : "",
           )}
         >
-          {hasText && <div className="whitespace-pre-wrap">{message.content}</div>}
+          {hasText && (
+            <span className="whitespace-pre-wrap">{message.content}</span>
+          )}
+
           {message.attachment_url && att === "image" && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={message.attachment_url}
               alt=""
               loading="lazy"
-              className={cn(
-                "rounded-xl max-h-72 object-cover",
-                hasText && "mt-2",
-              )}
+              className={cn("rounded-xl max-h-72 max-w-full object-cover", hasText && "mt-2")}
             />
           )}
           {message.attachment_url && att === "audio" && (
             <audio
               controls
               src={message.attachment_url}
-              className={cn("max-w-full", hasText && "mt-2")}
+              className={cn("max-w-full w-56", hasText && "mt-2")}
             />
           )}
           {message.attachment_url && att === "file" && (
@@ -94,11 +98,11 @@ export function MessageBubble({ message, meId, myRole, onDelete, grouped = false
               target="_blank"
               rel="noreferrer"
               className={cn(
-                "inline-flex items-center gap-1.5 underline underline-offset-2",
-                hasText && "mt-2",
+                "inline-flex items-center gap-1.5 underline underline-offset-2 text-sm",
+                hasText && "mt-2 block",
               )}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 shrink-0" aria-hidden>
                 <path d="M21.44 11.05 12.25 20.24a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
               </svg>
               Dosya
@@ -106,18 +110,20 @@ export function MessageBubble({ message, meId, myRole, onDelete, grouped = false
           )}
         </div>
 
+        {/* Time + delete */}
         <div
           className={cn(
-            "flex items-center gap-2 px-1 mt-1 text-2xs text-text-dim transition",
+            "flex items-center gap-2 px-1 text-2xs text-text-faint",
             isMine ? "flex-row-reverse" : "flex-row",
-            grouped && "opacity-0 group-hover:opacity-100",
+            grouped ? "opacity-0 group-hover:opacity-100 transition-opacity" : "opacity-70",
           )}
         >
-          <span className="tabular-nums">{timeAgo(message.created_at)}</span>
+          <time className="tabular-nums">{timeAgo(message.created_at)}</time>
           {canDelete && (
             <button
               onClick={() => onDelete(message.id)}
-              className="opacity-0 group-hover:opacity-100 hover:text-danger focus:opacity-100 transition"
+              className="opacity-0 group-hover:opacity-100 hover:text-danger transition-opacity text-2xs"
+              aria-label="Mesajı sil"
             >
               Sil
             </button>

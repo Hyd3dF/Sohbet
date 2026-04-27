@@ -18,12 +18,11 @@ export function MessageComposer({ roomId, me }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
-  // auto-grow textarea
   useEffect(() => {
     const ta = taRef.current;
     if (!ta) return;
     ta.style.height = "auto";
-    ta.style.height = Math.min(ta.scrollHeight, 160) + "px";
+    ta.style.height = Math.min(ta.scrollHeight, 140) + "px";
   }, [text]);
 
   async function uploadAttachment(blob: Blob, filename: string, type: AttachmentType) {
@@ -44,11 +43,7 @@ export function MessageComposer({ roomId, me }: Props) {
     const content = text.trim();
     setText("");
     const supabase = createClient();
-    await supabase.from("messages").insert({
-      room_id: roomId,
-      author_id: me.id,
-      content,
-    });
+    await supabase.from("messages").insert({ room_id: roomId, author_id: me.id, content });
     setSending(false);
   }
 
@@ -58,10 +53,7 @@ export function MessageComposer({ roomId, me }: Props) {
       const { url, type } = await uploadAttachment(file, file.name, "image");
       const supabase = createClient();
       await supabase.from("messages").insert({
-        room_id: roomId,
-        author_id: me.id,
-        attachment_url: url,
-        attachment_type: type,
+        room_id: roomId, author_id: me.id, attachment_url: url, attachment_type: type,
       });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Yükleme hatası");
@@ -78,10 +70,7 @@ export function MessageComposer({ roomId, me }: Props) {
       const { url, type } = await uploadAttachment(blob, "audio.webm", "audio");
       const supabase = createClient();
       await supabase.from("messages").insert({
-        room_id: roomId,
-        author_id: me.id,
-        attachment_url: url,
-        attachment_type: type,
+        room_id: roomId, author_id: me.id, attachment_url: url, attachment_type: type,
       });
     } catch (e) {
       alert(e instanceof Error ? e.message : "Ses gönderilemedi");
@@ -92,7 +81,7 @@ export function MessageComposer({ roomId, me }: Props) {
 
   if (recording) {
     return (
-      <div className="border-t border-border bg-bg-soft/40 backdrop-blur-sm p-3">
+      <div className="border-t border-border/60 bg-bg/80 backdrop-blur-xl p-3 sm:p-4">
         <AudioRecorder onRecorded={sendAudio} onCancel={() => setRecording(false)} />
       </div>
     );
@@ -101,17 +90,18 @@ export function MessageComposer({ roomId, me }: Props) {
   const canSend = !sending && text.trim().length > 0;
 
   return (
-    <div className="border-t border-border bg-bg-soft/40 backdrop-blur-sm p-3">
+    <div className="border-t border-border/60 bg-bg/80 backdrop-blur-xl px-3 sm:px-4 py-3">
       <form
         onSubmit={sendText}
         className={cn(
-          "flex items-end gap-1.5 bg-bg-card border border-border rounded-2xl pl-1.5 pr-1.5 py-1.5 transition",
-          "focus-within:border-accent/50 focus-within:shadow-ring-focus",
+          "flex items-end gap-2 bg-bg-card border border-border/80 rounded-2xl pl-2 pr-2 py-2 transition-all duration-150",
+          "focus-within:border-accent/40 focus-within:shadow-ring-focus",
         )}
       >
+        {/* Image upload */}
         <label
-          className="icon-btn shrink-0 cursor-pointer"
-          title="Fotoğraf"
+          className="icon-btn shrink-0 cursor-pointer self-end mb-0.5"
+          title="Fotoğraf ekle"
           aria-label="Fotoğraf ekle"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden>
@@ -124,16 +114,15 @@ export function MessageComposer({ roomId, me }: Props) {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) sendImage(f);
-            }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) sendImage(f); }}
           />
         </label>
+
+        {/* Audio record */}
         <button
           type="button"
           onClick={() => setRecording(true)}
-          className="icon-btn shrink-0"
+          className="icon-btn shrink-0 self-end mb-0.5"
           title="Ses kaydı"
           aria-label="Ses kaydı"
         >
@@ -143,6 +132,7 @@ export function MessageComposer({ roomId, me }: Props) {
           </svg>
         </button>
 
+        {/* Text input */}
         <textarea
           ref={taRef}
           value={text}
@@ -155,21 +145,22 @@ export function MessageComposer({ roomId, me }: Props) {
           }}
           placeholder="Mesaj yaz…"
           rows={1}
-          className="flex-1 bg-transparent border-0 outline-none resize-none text-[15px] leading-relaxed py-1.5 placeholder:text-text-dim self-center"
+          className="flex-1 bg-transparent border-0 outline-none resize-none text-[15px] leading-relaxed py-1.5 placeholder:text-text-dim self-center min-h-[2rem]"
         />
 
+        {/* Send button */}
         <button
           type="submit"
           disabled={!canSend}
           aria-label="Gönder"
           className={cn(
-            "shrink-0 w-9 h-9 grid place-items-center rounded-xl transition",
+            "shrink-0 w-9 h-9 grid place-items-center rounded-xl transition-all duration-150 self-end",
             canSend
-              ? "bg-gradient-to-br from-accent-glow to-accent text-white shadow-glow-soft hover:shadow-glow active:scale-95"
-              : "bg-bg-soft text-text-dim cursor-not-allowed",
+              ? "bubble-mine text-white shadow-glow-soft hover:brightness-110 active:scale-90"
+              : "bg-bg-soft text-text-faint cursor-not-allowed",
           )}
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden>
             <path d="M22 2 11 13" />
             <path d="M22 2 15 22l-4-9-9-4z" />
           </svg>

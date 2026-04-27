@@ -3,109 +3,124 @@ import Link from "next/link";
 export default function LandingPage() {
   return (
     <main className="relative min-h-screen overflow-hidden">
+      {/* Background */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 h-[40rem] w-[40rem] rounded-full bg-accent/20 blur-[120px] animate-pulse-soft" />
-        <div className="absolute -bottom-48 -right-32 h-[32rem] w-[32rem] rounded-full bg-accent-glow/15 blur-[110px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(124,92,255,0.08),transparent_60%)]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[50rem] w-[50rem] rounded-full bg-accent/15 blur-[140px] animate-pulse-soft" />
+        <div className="absolute bottom-0 right-0 h-[35rem] w-[35rem] rounded-full bg-accent-glow/10 blur-[120px]" />
+        <div className="absolute top-1/2 left-0 h-[20rem] w-[20rem] rounded-full bg-accent/8 blur-[100px]" />
+        {/* Grid texture */}
+        <div className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
       </div>
 
-      <header className="relative z-10 max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg tracking-tight">
-          <span className="bg-gradient-to-r from-accent to-accent-glow bg-clip-text text-transparent">
+      {/* Header */}
+      <header className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2.5 font-bold text-lg tracking-tight group">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-accent-glow to-accent grid place-items-center shadow-glow-soft transition-transform group-hover:scale-105">
+            <span className="text-white text-sm font-black leading-none">S</span>
+          </div>
+          <span className="bg-gradient-to-r from-text to-text-muted bg-clip-text text-transparent">
             Sohbet
           </span>
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="text-sm text-text-muted hover:text-text transition px-3 py-1.5 rounded-lg"
+            className="text-sm text-text-muted hover:text-text transition px-3 py-2 rounded-xl hover:bg-bg-soft"
           >
             Giriş Yap
           </Link>
-          <Link href="/register" className="btn-primary !py-1.5 !px-3 text-sm">
-            Başla
+          <Link href="/register" className="btn-primary !py-2 !px-4 text-sm">
+            Başla →
           </Link>
         </div>
       </header>
 
-      <section className="relative z-10 max-w-3xl mx-auto px-6 pt-16 md:pt-24 pb-20 text-center animate-slide-up">
-        <div className="inline-flex chip-accent mb-8">
-          <span className="relative flex w-1.5 h-1.5">
+      {/* Hero */}
+      <section className="relative z-10 max-w-3xl mx-auto px-5 sm:px-6 pt-16 sm:pt-24 pb-16 text-center animate-slide-up">
+        <div className="inline-flex chip-accent mb-8 gap-2">
+          <span className="relative flex w-1.5 h-1.5 mt-0.5">
             <span className="absolute inset-0 rounded-full bg-success animate-ping opacity-75" />
             <span className="relative w-1.5 h-1.5 rounded-full bg-success" />
           </span>
-          Beta — Arkadaşlar arasında
+          Beta · Arkadaşlar arasında
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tightest leading-[1.05]">
-          Sohbet et, paylaş,
-          <br className="hidden md:block" />
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tightest leading-[1.03] mb-6">
+          Sohbet et,{" "}
+          <br className="hidden sm:block" />
+          paylaş,{" "}
           <span className="bg-gradient-to-r from-accent-glow via-accent to-accent-glow bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer">
             yakın kal.
           </span>
         </h1>
 
-        <p className="mt-6 text-lg md:text-xl text-text-muted leading-relaxed max-w-xl mx-auto">
+        <p className="text-base sm:text-lg text-text-muted leading-relaxed max-w-lg mx-auto mb-10">
           Arkadaşlarınla özel odalar kur, gerçek zamanlı sohbet et,
-          fotoğraf ve mesajlarını paylaş. Hepsi tek bir yerde.
+          fotoğraf ve ses notları paylaş.
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link href="/register" className="btn-primary px-6 py-3 text-base group">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link href="/register" className="btn-primary px-7 py-3.5 text-base w-full sm:w-auto group">
             Hemen Başla
             <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
-          <Link href="/login" className="btn-ghost px-6 py-3 text-base">
+          <Link href="/login" className="btn-ghost px-7 py-3.5 text-base w-full sm:w-auto">
             Giriş Yap
           </Link>
         </div>
       </section>
 
-      <section className="relative z-10 max-w-5xl mx-auto px-6 pb-24">
+      {/* Features */}
+      <section className="relative z-10 max-w-5xl mx-auto px-5 sm:px-6 pb-20">
         <div className="grid sm:grid-cols-3 gap-4">
           {features.map((f, i) => (
             <div
               key={f.title}
-              style={{
-                animation: "slideUp 280ms cubic-bezier(0.22, 1, 0.36, 1) both",
-                animationDelay: `${120 + i * 90}ms`,
-              }}
-              className="glass p-6 group transition hover:shadow-lift hover:border-border-strong"
+              style={{ animationDelay: `${100 + i * 80}ms` }}
+              className="glass-hover p-6 group animate-slide-up"
             >
-              <div className="w-10 h-10 mb-4 rounded-xl grid place-items-center bg-accent-soft border border-accent/20 text-accent-glow transition group-hover:scale-105 group-hover:border-accent/40">
+              <div className={`w-11 h-11 mb-4 rounded-2xl grid place-items-center bg-gradient-to-br ${f.color} shadow-soft transition-transform group-hover:scale-110 duration-200`}>
                 {f.icon}
               </div>
-              <div className="font-semibold text-base mb-1 tracking-tight">{f.title}</div>
+              <div className="font-bold text-[15px] mb-1.5 tracking-tight">{f.title}</div>
               <div className="text-sm text-text-muted leading-relaxed">{f.desc}</div>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Footer */}
       <footer className="relative z-10 max-w-6xl mx-auto px-6 pb-10 text-center">
         <div className="text-xs text-text-faint">
-          © {new Date().getFullYear()} Sohbet · Arkadaşlar için tasarlandı
+          © {new Date().getFullYear()} Sohbet · Arkadaşlar için yapıldı 💜
         </div>
       </footer>
     </main>
   );
 }
 
-const iconCls = "w-5 h-5";
+const iconCls = "w-5 h-5 text-white";
 
 const features = [
   {
     title: "Gerçek zamanlı odalar",
-    desc: "Açık veya özel odalar kur, anında mesajlaş, sesli not bırak.",
+    desc: "Açık veya özel odalar kur, anında mesajlaş, fotoğraf ve sesli not paylaş.",
+    color: "from-violet-500 to-purple-600",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={iconCls}>
-        <path d="M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
   },
   {
     title: "Sosyal akış",
-    desc: "Fotoğraflarını paylaş, beğen, yorum yap. Anılar tek yerde.",
+    desc: "Fotoğraflarını paylaş, beğen, yorum yap. Anılar hepiniz için tek yerde.",
+    color: "from-blue-500 to-cyan-500",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={iconCls}>
         <rect x="3" y="3" width="18" height="18" rx="3" />
@@ -116,11 +131,11 @@ const features = [
   },
   {
     title: "Güvenli ve özel",
-    desc: "Veriler RLS ile veritabanı düzeyinde korunur. Sadece davetliler görür.",
+    desc: "Veriler RLS ile veritabanı düzeyinde korunur. Sadece davetliler görebilir.",
+    color: "from-emerald-500 to-teal-500",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className={iconCls}>
-        <rect x="4" y="11" width="16" height="10" rx="2" />
-        <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
   },

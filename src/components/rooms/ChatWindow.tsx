@@ -118,7 +118,7 @@ export function ChatWindow({ room, me, initialRole }: Props) {
   const roomMark = initialsOf(room.name) || "#";
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex">
+    <div className="h-[calc(100vh-3.5rem)] md:h-[calc(100vh-3.5rem)] flex">
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="sticky top-0 z-20 border-b border-border/70 bg-bg/65 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/55 px-4 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
