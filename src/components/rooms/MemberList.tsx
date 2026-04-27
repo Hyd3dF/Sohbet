@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "@/components/ui/Avatar";
 import { OnlineDot } from "@/components/presence/OnlineDot";
@@ -22,6 +22,10 @@ const ROLE_ORDER: Record<RoomRole, number> = { owner: 0, admin: 1, member: 2 };
 
 export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
   const [members, setMembers] = useState<MemberRow[]>([]);
+  // useId — bileşen birden fazla yerde mount edilirse her instance'a benzersiz
+  // bir Supabase realtime kanalı verir. Aynı topic adına çift abonelik
+  // realtime client'ı tutarsız bir state'e sokabiliyor.
+  const instanceId = useId();
 
   useEffect(() => {
     const supabase = createClient();
@@ -37,7 +41,7 @@ export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
     load();
 
     const channel = supabase
-      .channel(`members:${roomId}`)
+      .channel(`members:${roomId}:${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "room_members", filter: `room_id=eq.${roomId}` },
@@ -49,7 +53,7 @@ export function MemberList({ roomId, meId, myRole, ownerId }: Props) {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [roomId]);
+  }, [roomId, instanceId]);
 
   const canManage = myRole === "owner" || myRole === "admin";
 

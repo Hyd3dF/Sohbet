@@ -30,8 +30,27 @@ export function ChatWindow({ room, me, initialRole }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Viewport tespiti — MemberList'i aynı anda iki yerde mount etmemek için
+  // (desktop sidebar + mobile portal). Çift mount aynı Supabase kanal adına
+  // iki abone olduğu ve presence store'a çift listener eklediği için runtime
+  // hatası tetikliyordu (sayfa "This page couldn't load" ile çöküyordu).
+  const [isDesktop, setIsDesktop] = useState(true);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Mobile→desktop geçişinde panel açık kalırsa kapat
+  useEffect(() => {
+    if (isDesktop && showMembers) setShowMembers(false);
+  }, [isDesktop, showMembers]);
+
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -227,35 +246,38 @@ export function ChatWindow({ room, me, initialRole }: Props) {
         <MessageComposer roomId={room.id} me={me} />
       </div>
 
-      {/* Desktop: sidebar sabit, Mobile: fixed overlay */}
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col w-72 border-l border-border bg-bg-soft/30 backdrop-blur-sm overflow-hidden">
-        <div className="px-4 py-3 bg-bg-soft/80 backdrop-blur border-b border-border/70 flex items-center justify-between shrink-0">
-          <span className="text-2xs uppercase tracking-wider font-semibold text-text-muted">
-            Üyeler
-          </span>
-        </div>
-        <div className="flex-1 overflow-y-auto p-2">
-          <MemberList
-            roomId={room.id}
-            meId={me.id}
-            myRole={myRole}
-            ownerId={room.owner_id}
-          />
-        </div>
-      </aside>
+      {/* Desktop sidebar — sadece md+ ekranda mount edilir */}
+      {isDesktop && (
+        <aside className="flex flex-col w-72 border-l border-border bg-bg-soft/30 backdrop-blur-sm overflow-hidden">
+          <div className="px-4 py-3 bg-bg-soft/80 backdrop-blur border-b border-border/70 flex items-center justify-between shrink-0">
+            <span className="text-2xs uppercase tracking-wider font-semibold text-text-muted">
+              Üyeler
+            </span>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2">
+            <MemberList
+              roomId={room.id}
+              meId={me.id}
+              myRole={myRole}
+              ownerId={room.owner_id}
+            />
+          </div>
+        </aside>
+      )}
 
-      {/* Mobile: tam ekran overlay panel — Portal ile body'ye render */}
-      {showMembers && mounted && createPortal(
+      {/* Mobile: tam ekran overlay panel — Portal ile body'ye render.
+          MemberList sadece mobilde, sadece panel açıkken mount edilir.
+          Bu sayede MemberList aynı anda yalnızca tek yerde aktif olur. */}
+      {!isDesktop && showMembers && mounted && createPortal(
         <>
           {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm md:hidden animate-fade-in"
+            className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowMembers(false)}
             aria-hidden
           />
           {/* Panel */}
-          <div className="fixed top-0 right-0 bottom-0 z-[101] w-[82vw] max-w-xs flex flex-col bg-bg border-l border-border shadow-lift md:hidden animate-slide-in-right">
+          <div className="fixed top-0 right-0 bottom-0 z-[101] w-[82vw] max-w-xs flex flex-col bg-bg border-l border-border shadow-lift animate-slide-in-right">
             <div className="px-4 py-4 border-b border-border/70 flex items-center justify-between shrink-0 bg-bg-soft/80 backdrop-blur">
               <span className="text-sm font-semibold text-text tracking-tight">Üyeler</span>
               <button
