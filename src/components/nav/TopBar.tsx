@@ -37,6 +37,11 @@ export function TopBar({ profile }: Props) {
   const pathname = usePathname();
   const router = useRouter();
 
+  // Bottom nav sadece ana sayfalarda görünsün
+  const showBottomNav =
+    pathname === "/feed" ||
+    pathname === "/rooms";
+
   async function logout() {
     const supabase = createClient();
     await supabase.auth.signOut();
@@ -125,60 +130,77 @@ export function TopBar({ profile }: Props) {
         </div>
       </header>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="bottom-nav" aria-label="Mobil menü">
-        {navLinks.map((l) => {
-          const active = pathname.startsWith(l.href);
-          return (
+      {/* Mobile Bottom Navigation — sadece ana sayfalarda göster */}
+      {showBottomNav && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+          aria-label="Mobil menü"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
+        >
+          {/* Blur backdrop */}
+          <div className="absolute inset-0 bg-bg/85 backdrop-blur-2xl border-t border-white/[0.06]" aria-hidden />
+
+          <div className="relative flex items-center justify-around px-4 pt-2 pb-3">
+            {navLinks.map((l) => {
+              const active = pathname === l.href || (l.href === "/rooms" && pathname === "/rooms");
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  aria-current={active ? "page" : undefined}
+                  className="flex flex-col items-center gap-1 min-w-[60px] py-1 focus:outline-none"
+                >
+                  <span className={cn(
+                    "w-12 h-8 rounded-2xl grid place-items-center transition-all duration-200",
+                    active
+                      ? "bg-accent-soft"
+                      : "bg-transparent",
+                  )}>
+                    <span className={cn(
+                      "transition-colors duration-200",
+                      active ? "text-accent-glow" : "text-text-dim",
+                    )}>
+                      {l.icon(active)}
+                    </span>
+                  </span>
+                  <span className={cn(
+                    "text-[10px] font-semibold tracking-wide transition-colors duration-200",
+                    active ? "text-accent-glow" : "text-text-faint",
+                  )}>
+                    {l.label}
+                  </span>
+                </Link>
+              );
+            })}
+
             <Link
-              key={l.href}
-              href={l.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "bottom-nav-item",
-                active && "active",
-              )}
+              href={`/profile/${profile.id}`}
+              className="flex flex-col items-center gap-1 min-w-[60px] py-1 focus:outline-none"
             >
               <span className={cn(
-                "transition-transform duration-150",
-                active ? "scale-110" : "scale-100",
+                "w-12 h-8 rounded-2xl grid place-items-center transition-all duration-200",
+                pathname.startsWith("/profile") ? "bg-accent-soft" : "bg-transparent",
               )}>
-                {l.icon(active)}
+                <Avatar
+                  url={profile.avatar_url}
+                  name={profile.display_name || profile.username}
+                  size={24}
+                  className={cn(
+                    "ring-2 transition-all duration-200",
+                    pathname.startsWith("/profile") ? "ring-accent-glow" : "ring-border",
+                  )}
+                />
               </span>
               <span className={cn(
-                "text-[10px] font-semibold tracking-wide",
-                active ? "opacity-100" : "opacity-50",
+                "text-[10px] font-semibold tracking-wide transition-colors duration-200",
+                pathname.startsWith("/profile") ? "text-accent-glow" : "text-text-faint",
               )}>
-                {l.label}
+                Profil
               </span>
             </Link>
-          );
-        })}
-
-        <Link
-          href={`/profile/${profile.id}`}
-          className={cn(
-            "bottom-nav-item",
-            pathname.startsWith("/profile") && "active",
-          )}
-        >
-          <Avatar
-            url={profile.avatar_url}
-            name={profile.display_name || profile.username}
-            size={26}
-            className={cn(
-              "ring-2 transition-all",
-              pathname.startsWith("/profile") ? "ring-accent-glow" : "ring-border",
-            )}
-          />
-          <span className={cn(
-            "text-[10px] font-semibold tracking-wide",
-            pathname.startsWith("/profile") ? "opacity-100 text-accent-glow" : "opacity-50",
-          )}>
-            Profil
-          </span>
-        </Link>
-      </nav>
+          </div>
+        </nav>
+      )}
     </>
   );
 }

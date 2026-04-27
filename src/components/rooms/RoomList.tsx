@@ -102,7 +102,7 @@ export function RoomList({ me }: Props) {
   const otherRooms = rooms.filter((r) => !r.is_member);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-6 space-y-8">
       {/* Header */}
       <header className="flex items-center justify-between gap-4">
         <div>

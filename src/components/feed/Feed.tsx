@@ -114,7 +114,7 @@ export function Feed({ me }: Props) {
   }, [me.id]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-6 space-y-4">
       <PostComposer me={me} />
       {loading ? (
         <FeedLoading />

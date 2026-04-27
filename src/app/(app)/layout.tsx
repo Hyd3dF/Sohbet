@@ -37,8 +37,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar profile={profile} />
-      {/* pb-safe adds padding for mobile bottom nav */}
-      <div className="flex-1 pb-safe md:pb-0">{children}</div>
+      {/* Bottom nav padding sadece TopBar'ın kendisi yönetiyor, burada ekstra padding yok */}
+      <div className="flex-1">{children}</div>
     </div>
   );
 }
