@@ -27,6 +27,23 @@ interface ParticipantInfo {
   isLocal: boolean;
   videoTrack?: MediaStreamTrack;
   screenShareTrack?: MediaStreamTrack;
+  audioTrack?: MediaStreamTrack;
+}
+
+function AudioTile({ track }: { track: MediaStreamTrack }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    const stream = new MediaStream([track]);
+    el.srcObject = stream;
+    return () => {
+      el.srcObject = null;
+    };
+  }, [track]);
+
+  return <audio ref={audioRef} autoPlay playsInline className="hidden" />;
 }
 
 function VideoTile({
@@ -114,6 +131,7 @@ export function VoiceCall({ roomId, me, onClose }: Props) {
     r.remoteParticipants.forEach((p: RemoteParticipant) => {
       const camPub = p.getTrackPublication(Track.Source.Camera);
       const screenPub = p.getTrackPublication(Track.Source.ScreenShare);
+      const micPub = p.getTrackPublication(Track.Source.Microphone);
       all.push({
         identity: p.identity,
         name: p.name || p.identity,
@@ -122,6 +140,7 @@ export function VoiceCall({ roomId, me, onClose }: Props) {
         isLocal: false,
         videoTrack: (camPub?.videoTrack ?? camPub?.track)?.mediaStreamTrack,
         screenShareTrack: (screenPub?.videoTrack ?? screenPub?.track)?.mediaStreamTrack,
+        audioTrack: (micPub?.audioTrack ?? micPub?.track)?.mediaStreamTrack,
       });
     });
 
@@ -270,6 +289,7 @@ export function VoiceCall({ roomId, me, onClose }: Props) {
             >
               {participants.map((p) => (
                 <div key={p.identity} className="aspect-[4/3]">
+                  {p.audioTrack && !p.isLocal && <AudioTile track={p.audioTrack} />}
                   {p.videoTrack ? (
                     <VideoTile
                       track={p.videoTrack}
@@ -362,6 +382,7 @@ export function VoiceCall({ roomId, me, onClose }: Props) {
                         <line x1="8" y1="23" x2="16" y2="23" />
                       </svg>
                     )}
+                    {p.audioTrack && !p.isLocal && <AudioTile track={p.audioTrack} />}
                   </div>
                 ))
               )}
